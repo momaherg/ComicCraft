@@ -4,239 +4,217 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ComicCraft AI is a Python-based AI comic generation system that creates comic book elements (characters, locations, and complete panels) using Google's Gemini models. The project generates professional-quality comic assets with an iterative quality control system for panel composition.
+ComicCraft AI is a Python-based AI comic generation system that creates characters, locations, and complete comic panels using Google Gemini AI models. This is an experimental implementation focused on core AI generation capabilities.
 
-## Environment Setup
+## Commands
 
-### Virtual Environment
+### Environment Setup
 ```bash
-# Create and activate virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On macOS/Linux
-# .venv\Scripts\activate   # On Windows
+# Activate virtual environment
+source .venv/bin/activate  # macOS/Linux
+# .venv\Scripts\activate   # Windows
 
 # Install dependencies
 pip install -r requirements.txt
-```
 
-### Environment Variables
-Create a `.env` file in project root:
-```env
+# Configure API keys (create .env file)
 GEMINI_API_KEY=your_google_gemini_api_key_here
 ```
 
-Note: Legacy code references `OPENAI_API_KEY` but the system now exclusively uses Gemini models.
-
-### Output Directories
-The system auto-creates these directories:
-- `outputs/characters/` - Generated character images
-- `outputs/locations/` - Generated location/background images
-- `outputs/panels/` - Generated comic panels
-- `outputs/debug/` - Debug logs with timestamped JSON files
-
-## Running Tests
-
+### Running the Application
 ```bash
-# Test character generation (text, photo, comic image inputs)
-python examples/test_character_generation.py
+# Launch the Gradio testing UI
+python ui/gradio_app.py
 
-# Test location generation (text and photo inputs)
-python examples/test_location_generation.py
-
-# Test panel generation (combines characters + location + scene description)
-python examples/test_panel_generation.py
-
-# Quick start example
-python examples/quick_start.py
+# Access at http://localhost:7860
 ```
 
-All test scripts are interactive and will prompt for optional file uploads.
+### Development
+```bash
+# Run the Python interpreter with correct imports
+python3 -c "import sys; sys.path.insert(0, 'experimental_generation_setup'); from generations import CharacterGenerator"
+```
 
 ## Architecture
 
-### Three-Stage Generation Pipeline
+### Core Generation Pipeline
 
-#### 1. Character Generation (`src/generations/character_gen.py`)
-- **Model**: `gemini-2.5-flash-image`
-- **Two-step process**:
-  1. **Initial Design** (portrait 3:4): Generate or use existing comic character
-  2. **Internal Reference** (portrait 3:4): Add height ruler and name label
-- **Critical "Skip Generation" Feature**:
-  - If ONLY `comic_image_path` is provided (no text_prompt or photo_path), skips step 1 entirely
-  - Directly creates internal reference with ruler
-  - Saves 50% API calls and time when reusing existing character designs
-  - See `docs/technical/skip-generation.md` for details
+The system implements three primary generation workflows:
 
-#### 2. Location Generation (`src/generations/location_gen.py`)
-- **Model**: `gemini-2.5-flash-image`
-- **Single-step process**: Generate landscape background (16:9)
-- **No characters allowed** in location images (explicitly filtered)
-- Can transform from photo or generate from text
+#### 1. Character Generation (`experimental_generation_setup/generations/character_gen.py`)
+- **Input modes**: Photo transformation, comic image reuse, or text description
+- **Skip generation mode**: When only `comic_image_path` is provided (no `text_prompt` or `photo_path`), the system skips initial generation and proceeds directly to creating the internal character reference
+- **Two-stage process**:
+  1. Initial character design (3:4 portrait, unless skipped)
+  2. Internal reference creation with green screen workflow:
+     - Generate full-body character on green screen background
+     - Chroma key to remove green and create transparent PNG
+     - Crop to content bounds for accurate height measurement
+     - Create compact reference with character name label
+     - Scale using standard resolution (10 pixels/cm) for accurate relative heights
+- **Model**: Google Gemini 2.5 Flash Image for both stages
+- **Output**: Two images - initial design + internal reference (with transparent background and name label)
 
-#### 3. Panel Generation (`src/generations/panel_gen.py`)
-- **Generator Model**: `gemini-2.5-flash-image`
-- **Critic Model**: `gemini-2.0-flash-exp`
-- **Generator-Critic Feedback Loop** (max 5 iterations):
-  1. Generator creates panel from scene prompt + character references + location
-  2. Critic evaluates quality against 6 criteria (scene accuracy, composition, character placement, background, visual quality, professional polish)
-  3. If not acceptable, critic provides specific feedback
-  4. Feedback added to history and passed to next iteration
-  5. Loop continues until acceptable or max iterations reached
-- **Input Preparation**: Character reference images are concatenated horizontally before generation
-- **Aspect Ratio**: Controlled via native API `ImageConfig`, not text prompts
+#### 2. Location Generation (`experimental_generation_setup/generations/location_gen.py`)
+- **Input modes**: Photo transformation or text description
+- **Single-stage process**: Generates 16:9 landscape comic background
+- **Model**: Google Gemini 2.5 Flash Image
+- **Output**: Location image (no characters, suitable for foreground composition)
 
-### Centralized Prompts System
+#### 3. Panel Generation (`experimental_generation_setup/generations/panel_gen.py`)
+- **Generator-Critic Loop Architecture** (max 5 iterations):
+  1. **Input preparation**: Concatenate internal character images horizontally (bottom-aligned)
+  2. **Generator**: Creates panel from scene prompt + character lineup + location background
+  3. **Critic**: Evaluates quality and provides specific feedback
+  4. **Iteration**: Loop continues until acceptable or max iterations reached
+- **Models**:
+  - Generator: Gemini 2.5 Flash Image (creates panels)
+  - Critic: Gemini 2.0 Flash Exp (text-only evaluation)
+- **Character handling**: Names are referenced in prompts; relative heights preserved through standardized scaling (10 px/cm)
+- **Output**: Final panel image + concatenated character lineup + iteration metadata
 
-**ALL generation prompts are centralized in `src/generations/prompts.py`**. This file contains:
-- Detailed documentation of text inputs (function parameters) vs image inputs (passed to model separately)
-- Complete image flow diagrams showing how images move through the pipeline
-- 5 main prompt functions:
-  - `get_character_generation_prompt()` - Initial character design
-  - `get_character_internal_prompt()` - Character + ruler reference
-  - `get_location_generation_prompt()` - Background scenes
-  - `get_panel_generation_prompt()` - Complete panel composition with feedback history
-  - `get_panel_critique_prompt()` - Quality evaluation
+### Code Organization
 
-**To modify generation behavior, edit prompts in this single file rather than scattered across modules.**
-
-### Utilities (`src/generations/utils.py`)
-
-Key functions:
-- `save_debug_info()` - Timestamped JSON debug logs for every generation step
-- `save_image()` - Image persistence with path tracking
-- `concatenate_character_images()` - Horizontal stacking of character references for panel generation
-- `get_ruler_image_path()` - Locates `ruler_image.png` in project root (critical for character height scaling)
-- `get_generation_metadata()` - Standardized metadata structure
-
-### Image Naming Convention
-
-All generated images follow this pattern:
 ```
-{name}_{timestamp}_{type}.png
+experimental_generation_setup/
+└── generations/                     # Core generation package
+    ├── __init__.py                  # Exports: CharacterGenerator, LocationGenerator, PanelGenerator
+    ├── character_gen.py             # Character generation with skip logic
+    ├── location_gen.py              # Location generation
+    ├── panel_gen.py                 # Panel generation with critic loop
+    ├── prompts.py                   # Centralized prompt templates
+    ├── utils.py                     # Image processing utilities (concatenation, cropping, debug)
+    └── green_screen.py              # Green screen generation for character extraction
+
+ui/
+├── gradio_app.py                    # Web testing interface (3 tabs)
+└── README.md                        # UI usage instructions
+
+docs/
+├── product/
+│   └── user-stories.md              # 18 MVP user stories (simplified from 33)
+└── technical/
+    ├── ai-generations.md            # Technical specifications for each generation type
+    └── skip-generation.md           # Documentation on character skip mode
 ```
-- Characters: `Luna_20251023_193721_initial.png`, `Luna_20251023_193721_internal.png`
-- Locations: `Forest_20251023_193733.png`
-- Panels: `panel_20251023_193742_iter1.png`
-- Debug: `{type}_{step}_{timestamp}.json`
+
+**Important**: The UI imports use `from src.generations import ...` but the actual code path is `experimental_generation_setup/generations/`. The UI adds the parent directory to `sys.path` to enable imports.
+
+### Image Processing Utilities (`experimental_generation_setup/generations/utils.py`)
+
+Key utilities that are heavily used:
+- `concatenate_character_images()`: Horizontally concatenates character references with bottom alignment (preserves relative heights)
+- `remove_green_screen()`: Chroma key implementation for background removal
+- `crop_to_content()`: Removes transparent padding for accurate height measurement
+- `create_compact_character_reference()`: Creates final character reference with name label and tight-fit width
+- `save_debug_info()`: Saves timestamped JSON debug logs to `outputs/debug/`
+- `save_image()`: Handles image saving with proper format conversion
+
+### Centralized Prompts (`experimental_generation_setup/generations/prompts.py`)
+
+All AI prompts are defined in this single module:
+- `get_character_generation_prompt()`: Initial character design prompt
+- `get_character_internal_prompt()`: Full-body character on green screen prompt
+- `get_location_generation_prompt()`: Location background prompt
+- `get_panel_generation_prompt()`: Panel composition prompt with feedback history
+- `get_panel_critique_prompt()`: Critic evaluation instructions
+
+**When modifying AI behavior**: Edit prompts here rather than in the generator classes.
+
+### Output Structure
+
+All generated assets are saved to timestamped files:
+
+```
+outputs/
+├── characters/           # Character generations
+│   └── ui_test/         # UI-generated characters
+├── locations/           # Location backgrounds
+│   └── ui_test/         # UI-generated locations
+├── panels/              # Complete panels
+│   └── ui_test/         # UI-generated panels
+└── debug/               # JSON debug logs (timestamped)
+```
+
+Debug logs include full request parameters, API responses, and workflow metadata for troubleshooting.
 
 ## Key Technical Details
 
-### Height Ruler System
-- Character height is enforced using `ruler_image.png` (project root)
-- Internal character images include this ruler to ensure consistent scaling in panels
-- Heights are specified in centimeters (common values: 90, 130, 180)
-- The AI model composites the character against the ruler to match the specified height
+### Character Height System
+- Characters are generated with specific heights (e.g., 90cm, 130cm, 180cm)
+- Internal references use **10 pixels/cm** standard resolution
+- Green screen workflow ensures accurate height measurement:
+  1. Generate on green screen → 2. Remove background → 3. **Crop to content** → 4. Scale to target height
+- When concatenated for panels, relative heights are automatically preserved
 
-### Aspect Ratios
-- **Characters**: 3:4 portrait (focus on character design)
-- **Locations**: 16:9 landscape (wide backgrounds)
-- **Panels**: Configurable (default 3:4), controlled via `ImageConfig` API parameter
-- Aspect ratio dimensions defined in `prompts.py::get_aspect_ratio_dimensions()`
+### Skip Generation Feature
+The character generator has an optimization where if only `comic_image_path` is provided (without `text_prompt` or `photo_path`), it skips the initial generation step and proceeds directly to creating the internal reference. This:
+- Saves 50% of API calls and generation time
+- Useful for pre-designed characters or batch processing
+- See `docs/technical/skip-generation.md` for detailed usage
 
-### API Models Currently Used
-- **Gemini 2.5 Flash Image** (`gemini-2.5-flash-image`): All image generation (characters, locations, panels)
-- **Gemini 2.0 Flash Exp** (`gemini-2.0-flash-exp`): Panel critique/evaluation
+### Generator-Critic Loop
+The panel generation uses a feedback loop (max 5 iterations):
+- **Generator** creates the panel based on inputs + previous feedback
+- **Critic** evaluates if panel is acceptable or provides specific improvements
+- Feedback history accumulates in chat context across iterations
+- Loop exits early if panel is approved
+- If max iterations reached, returns last generated panel
 
 ### Error Handling
 All generators handle:
 - API timeouts and network errors
 - Content policy violations
 - Invalid input formats
-- Failed generations automatically refund credits (app layer)
+- Missing required parameters
 
-Debug information is saved to `outputs/debug/` for all errors with full context.
+Failed generations are logged to `outputs/debug/` with full error context. The system is designed to fail gracefully and provide clear error messages.
 
-## Character Generation Input Modes
+## Development Notes
 
-Three mutually exclusive modes:
+### API Keys
+- Requires `GEMINI_API_KEY` in `.env` file
+- Google Gemini models used:
+  - **Gemini 2.5 Flash Image**: Character, location, and panel generation
+  - **Gemini 2.0 Flash Exp**: Panel critique (text-only)
 
-1. **Text Description Only**
-   ```python
-   generate_character(text_prompt="Silver-haired mage...")
-   ```
-
-2. **Photo Transformation**
-   ```python
-   generate_character(photo_path="path.jpg", text_prompt="Transform to superhero")
-   ```
-
-3. **Comic Image** (two sub-modes)
-   - **Skip Generation** (comic_image_path ONLY): Uses existing design directly, only adds ruler
-   - **Transform Comic** (comic_image_path + text_prompt): Modifies existing comic character
-
-## Panel Composition
-
-Characters are referenced by name in scene prompts:
+### Import Patterns
+When importing the generation modules, use:
 ```python
-scene_prompt="Sarah talking to John in the foreground, Mike looking surprised in background"
+import sys
+sys.path.insert(0, 'experimental_generation_setup')
+from generations import CharacterGenerator, LocationGenerator, PanelGenerator
 ```
-- No manual positioning controls - fully AI-driven composition
-- Scene prompt (10-500 chars) describes action, composition, and character interactions
-- System automatically uses character names from internal reference images
-- Supports 0-7 characters per panel
 
-## Product Context
+Or run from the project root with adjusted paths.
 
-This codebase is the **backend generation engine** for a mobile comic creation app. User stories are in `docs/product/user-stories.md` showing:
-- Credit-based monetization (5 credits per generation)
-- User asset libraries (characters, locations)
-- Multi-panel story projects
-- PNG export functionality
+### Testing
+The Gradio UI (`ui/gradio_app.py`) provides comprehensive testing:
+- **Character Tab**: Test all input modes (text, photo, comic image, skip generation)
+- **Location Tab**: Test text and photo transformation
+- **Panel Tab**: Test full composition with 0-7 characters + optional location
 
-The generation functions here are API-ready but do NOT implement:
-- Credit system (handled by application layer)
-- User authentication
-- Asset management/storage
-- Multi-panel layout
+All outputs are saved to `outputs/*/ui_test/` directories.
 
-## Debug and Development
+### Product Context
+- MVP scope: 18 user stories (Phase 1)
+- Credit-based system (5 credits per generation)
+- Focus: Character/location asset creation → Panel composition → PNG export
+- Target users: Comic creators needing AI-assisted generation
+- See `docs/product/user-stories.md` for complete requirements
 
-### Debug Logs
-Every generation step writes JSON to `outputs/debug/` with timestamp:
-- Request parameters
-- API responses
-- Intermediate steps
-- Iteration feedback (for panels)
+## Important Constraints
 
-Example: `character_initial_design_request_20251023_193721_573475.json`
+1. **Character limit in panels**: 0-7 characters maximum
+2. **Prompt length**: 10-500 characters for scene descriptions
+3. **Art styles**: 5 preset options (Manga, American Comic, Webtoon, European BD, Indie)
+4. **Aspect ratios**: Configurable for panels (3:4, 16:9, 4:3, 1:1, 9:16)
+5. **Max iterations**: 5 for generator-critic loop (configurable)
 
-### Typical Generation Times
-- Characters: 15-45 seconds (both steps combined)
-- Characters (skip mode): ~20 seconds (internal reference only)
-- Locations: 20-50 seconds
-- Panels: 30-90 seconds per iteration (usually 1-3 iterations)
+## Common Pitfalls
 
-### Important Files
-- `ruler_image.png` (project root) - Height reference for character scaling
-- `.env` - API keys (not in git)
-- `docs/technical/ai-generations.md` - Generation requirements and flow
-- `docs/technical/skip-generation.md` - Skip generation feature documentation
-
-## Common Patterns
-
-### Adding New Prompts
-1. Add prompt function to `src/generations/prompts.py`
-2. Document text inputs (parameters) and image inputs (passed to model)
-3. Update generation module to call new prompt
-4. Add debug logging for the new step
-
-### Modifying Generation Behavior
-1. Edit prompt text in `prompts.py` (NOT in generator modules)
-2. Test with example scripts
-3. Check debug logs in `outputs/debug/`
-
-### Creating New Generators
-Follow the existing pattern:
-1. Create class with `__init__(self, api_key: str)`
-2. Configure Gemini model(s) in constructor
-3. Implement main public method (returns dict with paths + metadata)
-4. Use helper methods for multi-step processes
-5. Call `save_debug_info()` at every significant step
-6. Use centralized prompts from `prompts.py`
-
-## Known Limitations
-
-- Panel generation uses Gemini for critique but quality depends on generator capabilities
-- No batch generation support (each call generates one asset)
-- Style consistency across multiple generations not enforced
-- Character reference concatenation is simple horizontal stacking (no sophisticated layout)
+1. **Import confusion**: Code is in `experimental_generation_setup/generations/` but README examples show `src/generations/`
+2. **Comic image transformation**: If you provide both `comic_image_path` and `text_prompt`, it will attempt transformation (not skip generation)
+3. **Green screen RGB**: Must use exact RGB(0, 255, 0) for chroma keying to work correctly
+4. **Character concatenation**: Uses bottom alignment to preserve relative heights when characters have different heights
+5. **Cropping importance**: Must crop to content bounds before scaling to target height, otherwise transparent padding affects height calculations

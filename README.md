@@ -18,18 +18,20 @@ comicare/
 │   ├── product/
 │   │   └── user-stories.md          # Product requirements
 │   └── technical/
-│       └── ai-generations.md        # Technical specifications
-├── src/
+│       ├── ai-generations.md        # Technical specifications
+│       └── skip-generation.md       # Skip generation feature docs
+├── experimental_generation_setup/
 │   └── generations/
 │       ├── __init__.py              # Package initialization
 │       ├── character_gen.py         # Character generation
 │       ├── location_gen.py          # Location generation
 │       ├── panel_gen.py             # Panel generation with critic loop
-│       └── utils.py                 # Helper utilities
-├── examples/
-│   ├── test_character_generation.py # Character generation tests
-│   ├── test_location_generation.py  # Location generation tests
-│   └── test_panel_generation.py     # Panel generation tests
+│       ├── prompts.py               # Centralized prompt templates
+│       ├── utils.py                 # Image processing utilities
+│       └── green_screen.py          # Green screen generation
+├── ui/
+│   ├── gradio_app.py                # Web testing interface
+│   └── README.md                    # UI usage instructions
 ├── outputs/
 │   ├── characters/                  # Generated character images
 │   ├── locations/                   # Generated location images
@@ -37,6 +39,7 @@ comicare/
 │   └── debug/                       # Debug logs and intermediate files
 ├── .env                             # API keys (not in git)
 ├── requirements.txt                 # Python dependencies
+├── CLAUDE.md                        # Guide for Claude Code
 └── README.md                        # This file
 ```
 
@@ -53,7 +56,6 @@ pip install -r requirements.txt
 Create a `.env` file in the project root:
 
 ```env
-OPENAI_API_KEY=your_openai_api_key_here
 GEMINI_API_KEY=your_google_gemini_api_key_here
 ```
 
@@ -70,9 +72,11 @@ mkdir -p outputs/{characters,locations,panels,debug}
 ### Character Generation
 
 ```python
-from src.generations import CharacterGenerator
+import sys
+sys.path.insert(0, 'experimental_generation_setup')
+from generations import CharacterGenerator
 
-generator = CharacterGenerator(api_key="your_openai_key")
+generator = CharacterGenerator(api_key="your_gemini_api_key")
 
 # From text description
 result = generator.generate_character(
@@ -107,9 +111,11 @@ result = generator.generate_character(
 ### Location Generation
 
 ```python
-from src.generations import LocationGenerator
+import sys
+sys.path.insert(0, 'experimental_generation_setup')
+from generations import LocationGenerator
 
-generator = LocationGenerator(api_key="your_openai_key")
+generator = LocationGenerator(api_key="your_gemini_api_key")
 
 # From text description
 result = generator.generate_location(
@@ -133,9 +139,11 @@ result = generator.generate_location(
 ### Panel Generation
 
 ```python
-from src.generations import PanelGenerator
+import sys
+sys.path.insert(0, 'experimental_generation_setup')
+from generations import PanelGenerator
 
-generator = PanelGenerator(api_key="your_gemini_key")
+generator = PanelGenerator(api_key="your_gemini_api_key")
 
 result = generator.generate_panel(
     scene_prompt="Two characters talking in a coffee shop, friendly conversation",
@@ -153,44 +161,43 @@ result = generator.generate_panel(
 
 ## Testing
 
-### Run Individual Tests
+### Run the Gradio UI
 
 ```bash
-# Test character generation
-python examples/test_character_generation.py
+# Launch web testing interface
+python ui/gradio_app.py
 
-# Test location generation
-python examples/test_location_generation.py
-
-# Test panel generation
-python examples/test_panel_generation.py
+# Access at http://localhost:7860
 ```
 
-### Interactive Testing
+The Gradio UI provides comprehensive testing for:
+- Character generation (all input modes)
+- Location generation
+- Panel generation with multiple characters and locations
 
-The test scripts are interactive and will prompt for optional inputs:
-- Photo uploads for character/location transformation
-- Character images for panel composition
-- Style reference images
-
-Press Enter to skip optional tests.
+See `ui/README.md` for detailed usage instructions.
 
 ## Technical Details
 
 ### Character Generation Pipeline
 
-1. **Initial Design** (GPT-4 / DALL-E 3)
+1. **Initial Design** (Gemini 2.5 Flash Image) - **Can be skipped**
    - Input: Photo, comic image, or text + art style
    - Output: Character design in portrait orientation (3:4)
+   - Skip mode: If only comic_image_path provided, skips to step 2
 
-2. **Internal Character Image** (GPT-4 / DALL-E 3)
-   - Input: Character design + height specification
-   - Output: Character with height ruler and name label
+2. **Internal Character Image** (Gemini 2.5 Flash Image)
+   - Green screen workflow:
+     1. Generate full-body character on green screen
+     2. Chroma key to remove background
+     3. Crop to content bounds (accurate height)
+     4. Create compact reference with name label
+   - Output: Character with transparent background, scaled to exact height (10 px/cm)
    - Used for: Reference in panel generation
 
 ### Location Generation Pipeline
 
-1. **Location Image** (DALL-E 3)
+1. **Location Image** (Gemini 2.5 Flash Image)
    - Input: Photo or text + art style
    - Output: Comic background in landscape orientation (16:9)
    - Features: No characters, suitable for foreground composition
@@ -198,16 +205,17 @@ Press Enter to skip optional tests.
 ### Panel Generation Pipeline
 
 1. **Input Preparation**
-   - Concatenate character images horizontally
+   - Concatenate character internal references horizontally (bottom-aligned)
    - Load location background
 
-2. **Generator-Critic Loop** (Gemini 2.0 Flash, max 5 iterations)
-   - Generator creates panel based on prompt + assets
-   - Critic evaluates quality and provides feedback
+2. **Generator-Critic Loop** (max 5 iterations)
+   - Generator (Gemini 2.5 Flash Image) creates panel based on prompt + assets
+   - Critic (Gemini 2.0 Flash Exp) evaluates quality and provides feedback
    - Loop continues until acceptable or max iterations reached
 
 3. **Output**
    - Final panel image
+   - Concatenated character lineup
    - Iteration count and feedback history
 
 ### Debug Information
@@ -235,18 +243,22 @@ Supported art styles (customizable):
 
 ## Limitations & Notes
 
-1. **Image Generation**: Currently using DALL-E 3 for character and location generation. Panel generation uses Gemini for vision/critique but needs integration with an image generation API.
+1. **Image Generation**: Uses Google Gemini models exclusively:
+   - Gemini 2.5 Flash Image: Character, location, and panel generation
+   - Gemini 2.0 Flash Exp: Panel critique (text-only)
 
 2. **API Costs**:
-   - DALL-E 3: ~$0.04 per image (1024x1024), ~$0.08 per image (1024x1792)
-   - Gemini 2.0 Flash: Free tier available
+   - Gemini 2.5 Flash Image: Check Google AI pricing
+   - Gemini 2.0 Flash Exp: Free tier available
 
 3. **Generation Times**:
-   - Characters: 15-45 seconds
+   - Characters: 15-45 seconds (with skip mode: ~20 seconds)
    - Locations: 20-50 seconds
-   - Panels: 30-90 seconds per iteration
+   - Panels: 30-90 seconds per iteration (up to 5 iterations)
 
 4. **Credit System**: Not implemented in these functions (handled by application layer)
+
+5. **Character Limits**: Maximum 7 characters per panel for optimal composition
 
 ## Error Handling
 

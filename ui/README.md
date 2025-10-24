@@ -165,11 +165,11 @@ All errors are logged to debug files with full context.
 ## Architecture
 
 The UI is a **pure testing layer** that calls the core generation modules:
-- `src/generations/character_gen.py` - CharacterGenerator
-- `src/generations/location_gen.py` - LocationGenerator
-- `src/generations/panel_gen.py` - PanelGenerator
+- `experimental_generation_setup/generations/character_gen.py` - CharacterGenerator
+- `experimental_generation_setup/generations/location_gen.py` - LocationGenerator
+- `experimental_generation_setup/generations/panel_gen.py` - PanelGenerator
 
-No core generation code is modified or duplicated.
+The UI adjusts the Python path to import from `experimental_generation_setup`. No core generation code is modified or duplicated.
 
 ---
 

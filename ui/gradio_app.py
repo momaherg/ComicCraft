@@ -11,10 +11,10 @@ from typing import Optional, List, Tuple
 import gradio as gr
 from dotenv import load_dotenv
 
-# Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add parent directory to path and adjust for experimental_generation_setup
+sys.path.insert(0, str(Path(__file__).parent.parent / 'experimental_generation_setup'))
 
-from src.generations import CharacterGenerator, LocationGenerator, PanelGenerator
+from generations import CharacterGenerator, LocationGenerator, PanelGenerator
 
 
 # Load environment variables
