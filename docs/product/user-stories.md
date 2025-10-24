@@ -72,25 +72,27 @@ All stories follow **INVEST** principles:
 
 #### US-003: Create Character
 **As a** user
-**I want to** create a character from a photo OR text description
+**I want to** create a character from a photo, comic character image, OR text description
 **So that** I can feature characters in my stories
 
 **Priority:** Must Have | **Effort:** 8 points | **Dependencies:** US-001
 
 **Acceptance Criteria:**
-1. User can choose between photo upload or text description
-2. Photo: Upload from camera/library, system validates face is detectable
-3. Text: Enter description (10-500 characters) with helpful examples
-4. User can add optional text prompt for photo uploads to guide transformation
-5. User provides character name (3-50 characters, required) to reference in panels
-6. Select art style from 5 preset options
-7. Credit cost (5 credits) displayed before generation
-8. Generation shows progress with estimated time (15-45s)
-9. User can save or regenerate (costs 5 more credits)
-10. If generation fails, credits refunded automatically
-11. Saved character appears in character library with name
+1. User can choose between: photo upload, comic character image upload, or text description
+2. Photo: Upload from camera/library, system validates face is detectable, transforms to comic style
+3. Comic character image: Upload existing illustrated/comic character, system generates internal character image
+4. Text: Enter description (10-500 characters) with helpful examples
+5. User can add optional text prompt for photo/image uploads to guide transformation
+6. User provides character name (3-50 characters, required) to reference in panels
+7. Select art style from 5 preset options
+8. Select character height from preset options (e.g., 90 cm, 130 cm, 180 cm or ...)
+9. Credit cost (5 credits) displayed before generation
+10. Generation shows progress with estimated time (15-45s)
+11. User can save or regenerate (costs 5 more credits)
+12. If generation fails, credits refunded automatically
+13. Saved character appears in character library with name
 
-**Notes:** Combined US-005 and US-006 into single unified flow
+**Notes:** Combined US-005 and US-006 into single unified flow. Supports real photos, comic images, and text descriptions.
 
 ---
 
