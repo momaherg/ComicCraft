@@ -47,7 +47,7 @@ All stories follow **INVEST** principles:
 1. User can sign up with email and password
 2. Email format and password strength validated (min 8 chars)
 3. User receives 50 welcome credits upon registration
-4. Email verification sent (access granted immediately, verification required for full features)
+4. Email verification sent and must be completed before credits can be used
 5. Failed signup shows clear error messages
 
 ---
@@ -78,21 +78,13 @@ All stories follow **INVEST** principles:
 **Priority:** Must Have | **Effort:** 8 points | **Dependencies:** US-001
 
 **Acceptance Criteria:**
-1. User can choose between: photo upload, comic character image upload, or text description
-2. Photo: Upload from camera/library, system validates face is detectable, transforms to comic style
-3. Comic character image: Upload existing illustrated/comic character, system generates internal character image
-4. Text: Enter description (10-500 characters) with helpful examples
-5. User can add optional text prompt for photo/image uploads to guide transformation
-6. User provides character name (3-50 characters, required) to reference in panels
-7. Select art style from 5 preset options
-8. Select character height from preset options (e.g., 90 cm, 130 cm, 180 cm or ...)
-9. Credit cost (5 credits) displayed before generation
-10. Generation shows progress with estimated time (15-45s)
-11. User can save or regenerate (costs 5 more credits)
-12. If generation fails, credits refunded automatically
-13. Saved character appears in character library with name
+1. User provides: input method (photo upload, comic image upload, or text 10-500 chars), character name (3-50 chars, unique), art style (5 preset options), and height (preset options: 90cm, 130cm, 180cm, etc.)
+2. Photo/comic image uploads support optional text prompt for transformation guidance; comic images without text prompt skip initial generation (faster)
+3. Generation shows progress (15-45s estimate), displays 5 credit cost upfront, and only charges when image successfully saves
+4. User can save character to library or regenerate with modified parameters (costs 5 more credits)
+5. Failed generations show error message, don't charge credits, and offer retry with original settings
 
-**Notes:** Combined US-005 and US-006 into single unified flow. Supports real photos, comic images, and text descriptions.
+**Notes:** Combined US-005 and US-006 into single unified flow. Supports real photos, comic images, and text descriptions. Character names must be unique within user's library. No hard limit on number of characters/locations per account.
 
 ---
 
@@ -104,18 +96,13 @@ All stories follow **INVEST** principles:
 **Priority:** Must Have | **Effort:** 8 points | **Dependencies:** US-001
 
 **Acceptance Criteria:**
-1. User can choose between photo upload or text description
-2. Photo: Upload from camera/library with scenery guidelines
-3. Text: Enter description (10-500 characters) with location-specific examples
-4. User can add optional text prompt for photo uploads to guide transformation
-5. User provides location name (3-50 characters, required)
-6. Select art style from 5 preset options
-7. Credit cost (5 credits) displayed before generation
-8. Generation shows progress with estimated time (20-50s)
-9. User can save or regenerate (costs 5 more credits)
-10. Saved location appears in location library with name
+1. User provides: input method (photo upload or text 10-500 chars), location name (3-50 chars, unique), and art style (5 preset options)
+2. Photo uploads support optional text prompt for transformation guidance
+3. Generation shows progress (20-50s estimate), displays 5 credit cost upfront, and only charges when image successfully saves
+4. User can save location to library or regenerate with modified parameters (costs 5 more credits)
+5. Failed generations show error message, don't charge credits, and offer retry with original settings
 
-**Notes:** Combined US-010 and US-011 into single unified flow
+**Notes:** Combined US-010 and US-011 into single unified flow. Location names must be unique within user's library.
 
 ---
 
@@ -130,10 +117,10 @@ All stories follow **INVEST** principles:
 1. Separate tabs for characters and locations
 2. Grid view shows thumbnails with names and creation dates
 3. Search by name
-4. Tap asset to view full size and see: use in panel, regenerate, delete options
-5. Empty state shows "Create" button with helpful message
+4. Tap asset to view full details: thumbnail, name (editable), creation date, height (characters only)
+5. Asset detail actions: rename, use in panel, regenerate, delete
 
-**Notes:** Merged US-007 and US-012, removed sorting/filtering complexity
+**Notes:** Merged US-007 and US-012, removed sorting/filtering complexity. Regeneration preserves original parameters (text prompt, style, height) but allows modifications before regenerating.
 
 ---
 
@@ -218,17 +205,11 @@ All stories follow **INVEST** principles:
 **Priority:** Must Have | **Effort:** 10 points | **Dependencies:** US-003, US-004, US-007
 
 **Acceptance Criteria:**
-1. User initiates panel creation from within a story
-2. Guided flow: select location (optional) → select characters 0-3 → enter text prompt describing the scene
-3. Selected characters can be referenced by name in the prompt (e.g., "Sarah talking to John in the foreground, Mike looking surprised")
-4. Text prompt (10-500 characters) describes the action, composition, and how characters should appear
-5. System provides helpful prompt examples showing character name references
-6. Credit cost (5 credits) displayed before generation
-7. AI generates complete panel based on location, selected characters, and prompt
-8. Generation shows progress (30-90s estimated)
-9. Panel automatically saved to story
-10. Can regenerate with same or modified inputs (costs 5 credits) or accept
-11. If no assets exist, quick links to create them
+1. User selects optional location, 0-7 characters, and enters text prompt (10-500 chars) describing scene with character name references (e.g., "Sarah talking to John")
+2. System provides helpful prompt examples; if no assets exist, shows quick creation links
+3. Generation shows progress (30-90s estimate), displays 5 credit cost upfront, and only charges when panel successfully saves to story
+4. AI generates complete panel based on inputs; user can accept or regenerate with modified parameters (costs 5 more credits)
+5. Failed generations show error message, don't charge credits, and offer retry with original settings
 
 **Notes:** Panel composition (character positions, poses, interactions) is fully AI-generated based on the text prompt - no manual positioning controls. Characters are referenced by their names in prompts.
 
@@ -295,9 +276,9 @@ All stories follow **INVEST** principles:
 
 **Acceptance Criteria:**
 1. Failed generation shows user-friendly error message
-2. Credits automatically refunded for any failure
+2. Credits not charged if generation fails (user only charged when image successfully saved)
 3. Retry button available with original settings pre-filled
-4. Common errors handled: content policy, poor input, network error, timeout
+4. Common errors handled: API errors, network issues, timeouts
 
 **Notes:** Removed "after 3 failures" support contact - keep it simple
 
@@ -331,11 +312,11 @@ All stories follow **INVEST** principles:
 **Priority:** Must Have | **Effort:** 2 points | **Dependencies:** US-001
 
 **Acceptance Criteria:**
-1. Credit balance always visible in app header
-2. Tap balance to open credit screen
-3. Credit screen shows: current balance and "Buy Credits" button
-4. Credits displayed before every generation action
-5. Insufficient credits prevent action with "Buy Credits" prompt
+1. Credit balance always visible in app header; tap to open credit details screen
+2. Credit screen shows: current balance and "Buy Credits" button
+3. Credits displayed before every generation action
+4. Unverified accounts cannot use credits and see "Verify Email" prompt
+5. Insufficient credits prevent generation actions with "Buy Credits" prompt
 
 **Notes:** Removed color-coding, transaction history, notifications, filtering - minimal viable implementation
 
@@ -352,9 +333,8 @@ All stories follow **INVEST** principles:
 1. Purchase screen accessible from balance tap or when credits insufficient
 2. Two package options: 100 credits ($9.99), 500 credits ($39.99)
 3. Payment via credit/debit card or Apple Pay/Google Pay
-4. Credits added within 5 seconds of payment
-5. Email receipt sent automatically
-6. Failed payments show clear error with retry option
+4. Credits added within 5 seconds; email receipt sent automatically
+5. Failed payments show clear error with retry option
 
 **Notes:** Removed volume discounts, promotional codes, purchase history, PayPal - keep payment flow simple
 
@@ -493,7 +473,6 @@ All stories follow **INVEST** principles:
 - US-006: Delete Assets (1)
 - US-013: Generation Progress (3)
 - US-014: Handle Failures (3)
-- US-015: Content Safety (5)
 
 **Week 5-6: Story & Export**
 - US-007: Create Story (2)
