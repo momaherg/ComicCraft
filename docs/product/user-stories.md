@@ -1,10 +1,10 @@
 # ComicCraft AI - User Stories (Simplified MVP)
 
 ## Document Information
-**Version:** 4.0 - Simplified MVP
-**Last Updated:** October 22, 2025
+**Version:** 5.0 - Complete MVP with Web UX
+**Last Updated:** October 24, 2025
 **Status:** Ready for Development
-**Story Count:** 18 core stories (down from 33)
+**Story Count:** 23 Phase 1 stories (web app)
 
 ---
 
@@ -68,9 +68,75 @@ All stories follow **INVEST** principles:
 
 ---
 
+#### US-003: User Logout
+**As a** logged-in user
+**I want to** log out of my account
+**So that** I can secure my account on shared computers
+
+**Priority:** Must Have | **Effort:** 1 point | **Dependencies:** US-002
+
+**Acceptance Criteria:**
+1. Logout button accessible from user menu in app header
+2. Clicking logout clears session and redirects to login page
+3. "Remember me" preference cleared on logout
+4. Logout confirmation if user has unsaved changes or active generations
+5. After logout, accessing protected pages redirects to login
+
+---
+
+#### US-004: Password Reset
+**As a** user who forgot my password
+**I want to** reset my password via email
+**So that** I can regain access to my account
+
+**Priority:** Must Have | **Effort:** 2 points | **Dependencies:** US-001
+
+**Acceptance Criteria:**
+1. "Forgot Password" link on login page opens password reset form
+2. User enters email address; system sends reset link if account exists
+3. Success message shown regardless of whether email exists (security)
+4. Reset link expires after 1 hour
+5. Reset page allows entering new password with strength validation (min 8 chars)
+6. After successful reset, user redirected to login with success message
+7. Old password immediately invalidated
+
+---
+
+#### US-005: Resend Email Verification
+**As a** user with unverified email
+**I want to** request a new verification email
+**So that** I can verify my account if I missed the original email
+
+**Priority:** Must Have | **Effort:** 1 point | **Dependencies:** US-001
+
+**Acceptance Criteria:**
+1. Unverified users see banner: "Please verify your email to use credits" with "Resend" button
+2. Clicking "Resend" sends new verification email
+3. Rate limiting: Can resend once every 60 seconds
+4. Success message confirms email sent
+5. New verification link expires after 24 hours
+
+---
+
+#### US-006: Accept Terms & Privacy
+**As a** new user
+**I want to** review and accept Terms of Service and Privacy Policy
+**So that** I understand my rights and the platform's policies
+
+**Priority:** Must Have | **Effort:** 2 points | **Dependencies:** US-001
+
+**Acceptance Criteria:**
+1. Signup form includes checkbox: "I agree to the Terms of Service and Privacy Policy"
+2. Terms and Privacy links open in new tab
+3. Checkbox must be checked to enable signup button
+4. Terms and Privacy pages accessible from footer on all pages
+5. Acceptance timestamp stored with user account
+
+---
+
 ### Epic 02: Asset Creation
 
-#### US-003: Create Character
+#### US-007: Create Character
 **As a** user
 **I want to** create a character from a photo, comic character image, OR text description
 **So that** I can feature characters in my stories
@@ -79,12 +145,12 @@ All stories follow **INVEST** principles:
 
 **Acceptance Criteria:**
 1. User can choose between: photo upload, comic character image upload, or text description
-2. Photo: Upload from camera/library and transform to comic style
-3. Comic character image: Upload existing illustrated/comic character, or use as-is to skip generation (faster)
+2. Photo: Upload photo file and transform to comic style
+3. Comic character image: Upload existing illustrated/comic character file, or use as-is to skip generation (faster)
 4. Text: Enter description (10-500 characters) with helpful examples
 5. User can add optional text prompt for photo/image uploads to guide transformation
 6. User provides character name (3-50 characters, required) to reference in panels
-7. Select art style from 5 preset options
+7. Select art style from 5 preset options: Manga, American Comic, Webtoon, European BD, Indie
 8. Select character height from preset options (e.g., 90 cm, 130 cm, 180 cm or ...)
 9. Credit cost (5 credits) displayed before generation
 10. Generation shows progress with estimated time (15-45s)
@@ -92,11 +158,11 @@ All stories follow **INVEST** principles:
 12. Credits only charged when generation completes successfully and image is saved for viewing
 13. Saved character appears in character library with name
 
-**Notes:** Combined US-005 and US-006 into single unified flow. Supports real photos, comic images, and text descriptions. Character names must be unique within user's library. No hard limit on number of characters/locations per account.
+**Notes:** Combined US-005 and US-006 into single unified flow. Supports real photos, comic images, and text descriptions. Character names must be unique within user's library. No hard limit on number of characters/locations per account. Image uploads: max 10MB, formats: PNG/JPEG/WebP, minimum 512x512 resolution recommended.
 
 ---
 
-#### US-004: Create Location
+#### US-008: Create Location
 **As a** user
 **I want to** create a location from a photo OR text description
 **So that** I can set scenes for my story
@@ -105,22 +171,22 @@ All stories follow **INVEST** principles:
 
 **Acceptance Criteria:**
 1. User can choose between photo upload or text description
-2. Photo: Upload from camera/library with scenery guidelines
+2. Photo: Upload photo file with scenery guidelines
 3. Text: Enter description (10-500 characters) with location-specific examples
 4. User can add optional text prompt for photo uploads to guide transformation
 5. User provides location name (3-50 characters, required)
-6. Select art style from 5 preset options
+6. Select art style from 5 preset options: Manga, American Comic, Webtoon, European BD, Indie
 7. Credit cost (5 credits) displayed before generation
 8. Generation shows progress with estimated time (20-50s)
 9. User can save or regenerate (costs 5 more credits)
 10. Credits only charged when generation completes successfully and image is saved for viewing
 11. Saved location appears in location library with name
 
-**Notes:** Combined US-010 and US-011 into single unified flow. Location names must be unique within user's library.
+**Notes:** Combined US-010 and US-011 into single unified flow. Location names must be unique within user's library. Image uploads: max 10MB, formats: PNG/JPEG/WebP, minimum 512x512 resolution recommended.
 
 ---
 
-#### US-005: View Asset Libraries
+#### US-009: View Asset Libraries
 **As a** user
 **I want to** browse my characters and locations
 **So that** I can find and use them in panels
@@ -129,21 +195,24 @@ All stories follow **INVEST** principles:
 
 **Acceptance Criteria:**
 1. Separate tabs for characters and locations
-2. Grid view shows thumbnails with names and creation dates
-3. Search by name
-4. Tap asset to view full details: thumbnail, name (editable), creation date, height (characters only)
-5. Asset detail actions: rename, use in panel, regenerate, delete
+2. Grid view shows asset cards with: thumbnail (or placeholder), name, status badge, and creation date
+3. Status badges indicate: "Generating..." (with progress), "Ready", or "Failed" (with error icon)
+4. Assets appear in library immediately when generation starts, updating in real-time as generation progresses
+5. Search by name (searches ready assets only)
+6. Click asset to view full details: thumbnail, name (editable), creation date, height (characters only), generation status
+7. Asset detail actions available when ready: rename, use in panel, regenerate, delete
+8. Failed assets show error message and allow retry or delete
 
-**Notes:** Merged US-007 and US-012, removed sorting/filtering complexity. Regeneration preserves original parameters (text prompt, style, height) but allows modifications before regenerating.
+**Notes:** Merged US-007 and US-012, removed sorting/filtering complexity. Regeneration preserves original parameters (text prompt, style, height) but allows modifications before regenerating. Real-time status updates allow users to navigate away during generation and return to see progress.
 
 ---
 
-#### US-006: Delete Assets
+#### US-010: Delete Assets
 **As a** user
 **I want to** remove characters or locations I don't need
 **So that** my library stays organized
 
-**Priority:** Must Have | **Effort:** 1 point | **Dependencies:** US-005
+**Priority:** Must Have | **Effort:** 1 point | **Dependencies:** US-009
 
 **Acceptance Criteria:**
 1. User can delete any character or location
@@ -158,7 +227,7 @@ All stories follow **INVEST** principles:
 
 ### Epic 03: Story Management
 
-#### US-007: Create Story
+#### US-011: Create Story
 **As a** user
 **I want to** start a new story project
 **So that** I can organize my comic panels
@@ -176,30 +245,30 @@ All stories follow **INVEST** principles:
 
 ---
 
-#### US-008: View Story Gallery
+#### US-012: View Story Gallery
 **As a** user
 **I want to** see all my stories
 **So that** I can access and manage them
 
-**Priority:** Must Have | **Effort:** 2 points | **Dependencies:** US-007
+**Priority:** Must Have | **Effort:** 2 points | **Dependencies:** US-011
 
 **Acceptance Criteria:**
 1. Gallery shows stories with cover, title, panel count, last modified date
 2. Grid or list view toggle
-3. Tap story to open editor
-4. Long-press for menu: rename, delete
+3. Click story to open editor
+4. Right-click for menu: rename, delete
 5. Empty state shows "Create Story" button
 
 **Notes:** Removed search, sorting, duplicate features for simplicity
 
 ---
 
-#### US-009: Delete Story
+#### US-013: Delete Story
 **As a** user
 **I want to** delete stories I don't need
 **So that** my workspace stays organized
 
-**Priority:** Must Have | **Effort:** 1 point | **Dependencies:** US-008
+**Priority:** Must Have | **Effort:** 1 point | **Dependencies:** US-012
 
 **Acceptance Criteria:**
 1. User can delete story from gallery
@@ -211,12 +280,12 @@ All stories follow **INVEST** principles:
 
 ### Epic 04: Panel Creation
 
-#### US-010: Compose Panel
+#### US-014: Compose Panel
 **As a** user
 **I want to** create a panel by combining location, characters, and a description
 **So that** I can build my comic story
 
-**Priority:** Must Have | **Effort:** 10 points | **Dependencies:** US-003, US-004, US-007
+**Priority:** Must Have | **Effort:** 10 points | **Dependencies:** US-007, US-008, US-011
 
 **Acceptance Criteria:**
 1. User initiates panel creation from within a story
@@ -224,24 +293,25 @@ All stories follow **INVEST** principles:
 3. Selected characters can be referenced by name in the prompt (e.g., "Sarah talking to John in the foreground, Mike looking surprised")
 4. Text prompt (10-500 characters) describes the action, composition, and how characters should appear
 5. System provides helpful prompt examples showing character name references
-6. Credit cost (5 credits) displayed before generation
-7. AI generates complete panel based on location, selected characters, and prompt
-8. Generation shows progress (30-90s estimated)
-9. Panel automatically saved to story when generation completes successfully
-10. Credits only charged when generation completes successfully and panel is saved for viewing
-11. Can regenerate with same or modified inputs (costs 5 credits) or accept
-12. If no assets exist, quick links to create them
+6. User selects panel aspect ratio from options: 3:4 (portrait), 16:9 (landscape), 4:3, 1:1 (square), 9:16 (vertical)
+7. Credit cost (5 credits) displayed before generation
+8. AI generates complete panel based on location, selected characters, prompt, and aspect ratio
+9. Generation shows progress (30-90s estimated)
+10. Panel automatically saved to story when generation completes successfully
+11. Credits only charged when generation completes successfully and panel is saved for viewing
+12. Can regenerate with same or modified inputs (costs 5 credits) or accept
+13. If no assets exist, quick links to create them
 
 **Notes:** Panel composition (character positions, poses, interactions) is fully AI-generated based on the text prompt - no manual positioning controls. Characters are referenced by their names in prompts.
 
 ---
 
-#### US-011: Arrange Panels
+#### US-015: Arrange Panels
 **As a** user
 **I want to** reorder panels in my story
 **So that** I control the narrative flow
 
-**Priority:** Must Have | **Effort:** 3 points | **Dependencies:** US-010
+**Priority:** Must Have | **Effort:** 3 points | **Dependencies:** US-014
 
 **Acceptance Criteria:**
 1. Story view shows panels in sequence with numbers
@@ -253,12 +323,12 @@ All stories follow **INVEST** principles:
 
 ---
 
-#### US-012: Delete Panel
+#### US-016: Delete Panel
 **As a** user
 **I want to** remove panels that don't work
 **So that** I can refine my story
 
-**Priority:** Must Have | **Effort:** 1 point | **Dependencies:** US-010
+**Priority:** Must Have | **Effort:** 1 point | **Dependencies:** US-014
 
 **Acceptance Criteria:**
 1. Delete button on each panel
@@ -270,30 +340,31 @@ All stories follow **INVEST** principles:
 
 ### Epic 05: Generation Core
 
-#### US-013: View Generation Progress
+#### US-017: View Generation Progress
 **As a** user
 **I want to** see progress when AI generates content
 **So that** I know the system is working
 
-**Priority:** Must Have | **Effort:** 3 points | **Dependencies:** US-003, US-004, US-010
+**Priority:** Must Have | **Effort:** 3 points | **Dependencies:** US-007, US-008, US-014
 
 **Acceptance Criteria:**
-1. Progress indicator shows estimated time remaining
-2. Progress updates every 5 seconds
-3. User can navigate away and return without interrupting
-4. Notification when generation completes
-5. If generation fails, show clear error and refund credits
+1. During generation, modal/overlay shows: asset name, progress bar, estimated time remaining, and generation status
+2. Progress updates every 5 seconds with real-time status
+3. User can close modal and navigate away; generation continues in background
+4. Asset appears in library (US-005) with "Generating..." status and progress indicator
+5. Browser notification when generation completes (if user navigated away)
+6. Credits not charged if generation fails (see US-014)
 
-**Notes:** Removed cancel/refund window, queue system - simplified to essential feedback only
+**Notes:** Progress visible in two places: generation modal (if user stays) and library status badge (always). User can navigate freely without interrupting generation.
 
 ---
 
-#### US-014: Handle Generation Failures
+#### US-018: Handle Generation Failures
 **As a** user
 **I want to** clear explanations when generation fails
 **So that** I can successfully retry
 
-**Priority:** Must Have | **Effort:** 3 points | **Dependencies:** US-013
+**Priority:** Must Have | **Effort:** 3 points | **Dependencies:** US-017
 
 **Acceptance Criteria:**
 1. Failed generation shows user-friendly error message
@@ -307,25 +378,25 @@ All stories follow **INVEST** principles:
 
 ### Epic 06: Export & Monetization
 
-#### US-016: Export Comic as PNG
+#### US-019: Export Comic as PNG
 **As a** user
 **I want to** export my story as a single image
 **So that** I can save and share it
 
-**Priority:** Must Have | **Effort:** 3 points | **Dependencies:** US-010
+**Priority:** Must Have | **Effort:** 3 points | **Dependencies:** US-014
 
 **Acceptance Criteria:**
 1. Export button in story view
-2. Generates single vertical PNG with all panels
-3. Standard resolution (optimized for mobile sharing)
-4. Native share sheet opens after export
+2. Generates single vertical PNG with all panels in sequence
+3. Standard resolution (optimized for web sharing: 1080px wide)
+4. PNG file automatically downloads to user's computer
 5. No watermarks (all users equal in MVP)
 
 **Notes:** Removed PDF, ZIP, multiple resolutions, preview, watermark system, storage - just simple PNG export
 
 ---
 
-#### US-017: View Credit Balance
+#### US-020: View Credit Balance
 **As a** user
 **I want to** see my credit balance
 **So that** I know when to purchase more
@@ -334,7 +405,7 @@ All stories follow **INVEST** principles:
 
 **Acceptance Criteria:**
 1. Credit balance always visible in app header
-2. Tap balance to open credit screen
+2. Click balance to open credit screen
 3. Credit screen shows: current balance and "Buy Credits" button
 4. Credits displayed before every generation action
 5. Unverified accounts cannot use credits and see "Verify Email" prompt
@@ -344,17 +415,17 @@ All stories follow **INVEST** principles:
 
 ---
 
-#### US-018: Purchase Credits
+#### US-021: Purchase Credits
 **As a** user
 **I want to** buy credits
 **So that** I can continue creating
 
-**Priority:** Must Have | **Effort:** 8 points | **Dependencies:** US-017
+**Priority:** Must Have | **Effort:** 8 points | **Dependencies:** US-020
 
 **Acceptance Criteria:**
-1. Purchase screen accessible from balance tap or when credits insufficient
+1. Purchase screen accessible from balance click or when credits insufficient
 2. Two package options: 100 credits ($9.99), 500 credits ($39.99)
-3. Payment via credit/debit card or Apple Pay/Google Pay
+3. Payment via credit/debit card (Stripe integration)
 4. Credits added within 5 seconds of payment
 5. Email receipt sent automatically
 6. Failed payments show clear error with retry option
@@ -363,16 +434,48 @@ All stories follow **INVEST** principles:
 
 ---
 
+#### US-022: Edit Story Details
+**As a** user
+**I want to** edit my story title and description
+**So that** I can fix typos or update story information
+
+**Priority:** Must Have | **Effort:** 1 point | **Dependencies:** US-011
+
+**Acceptance Criteria:**
+1. Edit option accessible from story gallery (right-click menu) or story view header
+2. Edit dialog shows: title (3-100 chars) and description (max 500 chars)
+3. Changes save immediately
+4. Validation prevents empty title
+5. Success notification after save
+
+---
+
+#### US-023: Simple Onboarding
+**As a** first-time user
+**I want to** understand how to use the platform
+**So that** I can start creating comics quickly
+
+**Priority:** Must Have | **Effort:** 2 points | **Dependencies:** US-002
+
+**Acceptance Criteria:**
+1. After first login, simple welcome modal explains workflow: "Create Characters → Create Locations → Compose Panels → Export"
+2. Four illustrated steps with brief descriptions (1 sentence each)
+3. "Get Started" button closes modal and navigates to character library
+4. "Skip" option available; modal doesn't show again after dismissal
+5. Help menu includes "View Tutorial" to reopen welcome modal
+
+---
+
 ## PHASE 2: ENHANCEMENT (4 weeks)
 
 **Goal:** Add polish and commonly requested features
 
-### US-019: Add Text to Panels
+### US-024: Add Text to Panels
 **As a** user
 **I want to** add dialogue and captions to panels
 **So that** I can tell my story with words
 
-**Priority:** Should Have | **Effort:** 5 points | **Dependencies:** US-010
+**Priority:** Should Have | **Effort:** 5 points | **Dependencies:** US-014
 
 **Acceptance Criteria:**
 1. Edit mode on any panel allows adding text boxes
@@ -385,12 +488,12 @@ All stories follow **INVEST** principles:
 
 ---
 
-#### US-020: Duplicate Panel
+#### US-025: Duplicate Panel
 **As a** user
 **I want to** copy a panel and modify it
 **So that** I can create similar scenes efficiently
 
-**Priority:** Should Have | **Effort:** 2 points | **Dependencies:** US-010
+**Priority:** Should Have | **Effort:** 2 points | **Dependencies:** US-014
 
 **Acceptance Criteria:**
 1. Duplicate button on each panel
@@ -400,7 +503,7 @@ All stories follow **INVEST** principles:
 
 ---
 
-#### US-021: Account Settings
+#### US-026: Account Settings
 **As a** user
 **I want to** manage my account
 **So that** I can update my information
@@ -418,7 +521,7 @@ All stories follow **INVEST** principles:
 
 ---
 
-#### US-022: Help Documentation
+#### US-027: Help Documentation
 **As a** user
 **I want to** access help when I need it
 **So that** I can learn features
@@ -435,7 +538,7 @@ All stories follow **INVEST** principles:
 
 ---
 
-#### US-023: Contact Support
+#### US-028: Contact Support
 **As a** user
 **I want to** contact support
 **So that** I can get help with issues
@@ -457,63 +560,69 @@ All stories follow **INVEST** principles:
 **Goal:** Features for retention and monetization after validating core product
 
 ### Authentication Enhancements
-- **US-024:** OAuth Login (Google, Apple, Facebook)
-- **US-025:** Social profile integration
+- **US-029:** OAuth Login (Google, Apple, Facebook)
+- **US-030:** Social profile integration
 
 ### Premium Features
-- **US-026:** Subscription Plans (monthly credits + perks)
-- **US-027:** Advanced Export Options (PDF, high-res, individual panels)
-- **US-028:** Premium Art Styles
-- **US-029:** Batch Operations (multi-select delete, duplicate)
+- **US-031:** Subscription Plans (monthly credits + perks)
+- **US-032:** Advanced Export Options (PDF, high-res, individual panels)
+- **US-033:** Premium Art Styles
+- **US-034:** Batch Operations (multi-select delete, duplicate)
 
 ### User Experience
-- **US-030:** Interactive Onboarding Tutorial
-- **US-031:** Usage Analytics Dashboard
-- **US-032:** Panel Templates Library
-- **US-033:** Collaboration Features (share stories for editing)
+- **US-035:** Interactive Onboarding Tutorial
+- **US-036:** Usage Analytics Dashboard
+- **US-037:** Panel Templates Library
+- **US-038:** Collaboration Features (share stories for editing)
 
 ### Advanced Features
-- **US-034:** Advanced Panel Controls (manual pose selection, composition presets)
-- **US-035:** Panel Layout Templates (grid layouts, dynamic sizes)
+- **US-039:** Advanced Panel Controls (manual pose selection, composition presets)
+- **US-040:** Panel Layout Templates (grid layouts, dynamic sizes)
 
 ---
 
 ## Development Roadmap
 
-### Phase 1: Ultra-MVP (6 weeks, ~50 points)
-**Target:** Functional comic creation and export
+### Phase 1: Ultra-MVP (6 weeks, ~64 points)
+**Target:** Functional comic creation and export with essential UX
 
-**Week 1-2: Foundation**
+**Week 1-2: Foundation & Authentication (21 points)**
 - US-001: Account Creation (3)
 - US-002: Login (2)
-- US-017: Credit Balance (2)
-- US-018: Purchase Credits (8)
+- US-003: Logout (1)
+- US-004: Password Reset (2)
+- US-005: Resend Email Verification (1)
+- US-006: Terms & Privacy (2)
+- US-020: Credit Balance (2)
+- US-021: Purchase Credits (8)
 
-**Week 3-4: Asset Creation**
-- US-003: Create Character (8)
-- US-004: Create Location (8)
-- US-005: Asset Libraries (3)
-- US-006: Delete Assets (1)
-- US-013: Generation Progress (3)
-- US-014: Handle Failures (3)
+**Week 3-4: Asset Creation (26 points)**
+- US-007: Create Character (8)
+- US-008: Create Location (8)
+- US-009: Asset Libraries (3)
+- US-010: Delete Assets (1)
+- US-017: Generation Progress (3)
+- US-018: Handle Failures (3)
 
-**Week 5-6: Story & Export**
-- US-007: Create Story (2)
-- US-008: Story Gallery (2)
-- US-009: Delete Story (1)
-- US-010: Compose Panel (10)
-- US-011: Arrange Panels (3)
-- US-012: Delete Panel (1)
-- US-016: Export PNG (3)
+**Week 5-6: Story, Panels & Export (17 points)**
+- US-011: Create Story (2)
+- US-012: Story Gallery (2)
+- US-013: Delete Story (1)
+- US-022: Edit Story Details (1)
+- US-014: Compose Panel (10)
+- US-015: Arrange Panels (3)
+- US-016: Delete Panel (1)
+- US-019: Export PNG (3)
+- US-023: Simple Onboarding (2)
 
 ### Phase 2: Enhancement (4 weeks, ~14 points)
 **Target:** Polish and usability improvements
 
-- US-019: Add Text (5)
-- US-020: Duplicate Panel (2)
-- US-021: Settings (3)
-- US-022: Help Docs (2)
-- US-023: Contact Support (2)
+- US-024: Add Text to Panels (5)
+- US-025: Duplicate Panel (2)
+- US-026: Account Settings (3)
+- US-027: Help Documentation (2)
+- US-028: Contact Support (2)
 
 ### Phase 3: Growth (Timeline TBD)
 **Target:** Driven by user feedback and metrics
