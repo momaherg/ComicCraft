@@ -1,10 +1,10 @@
 # ComicCraft AI - User Stories (Simplified MVP)
 
 ## Document Information
-**Version:** 5.1 - Complete MVP with Panel Iterations
+**Version:** 5.2 - Complete MVP with Asset Modification
 **Last Updated:** October 24, 2025
 **Status:** Ready for Development
-**Story Count:** 24 Phase 1 stories (web app)
+**Story Count:** 24 Phase 1 stories + 6 Phase 2 stories (web app)
 
 ---
 
@@ -200,7 +200,7 @@ All stories follow **INVEST** principles:
 4. Assets appear in library immediately when generation starts, updating in real-time as generation progresses
 5. Search by name (searches ready assets only)
 6. Click asset to view full details: thumbnail, name (editable), creation date, height (characters only), generation status
-7. Asset detail actions available when ready: rename, use in panel, regenerate, delete
+7. Asset detail actions available when ready: rename, use in panel, regenerate, modify with prompt, delete
 8. Failed assets show error message and allow retry or delete
 
 **Notes:** Merged US-007 and US-012, removed sorting/filtering complexity. Regeneration preserves original parameters (text prompt, style, height) but allows modifications before regenerating. Real-time status updates allow users to navigate away during generation and return to see progress.
@@ -357,6 +357,31 @@ All stories follow **INVEST** principles:
 7. All versions remain saved; switching versions doesn't delete alternatives
 
 **Notes:** This feature allows users to review and compare all iterations generated during the refinement process. Particularly useful when the AI generated multiple good options and the user wants to reconsider their initial choice.
+
+---
+
+#### US-016B: Modify Asset with Prompt
+**As a** user
+**I want to** modify an already-generated asset using a text prompt
+**So that** I can make specific changes without regenerating from scratch
+
+**Priority:** Should Have | **Effort:** 5 points | **Dependencies:** US-007, US-008, US-014
+
+**Acceptance Criteria:**
+1. "Modify with prompt" action available from asset detail view (characters, locations, panels)
+2. Modify dialog shows: current asset image, modification prompt field (10-500 chars), and helpful examples
+3. Examples include: "Add sunglasses", "Change to sunset lighting", "Move character to the left"
+4. System uses existing image + modification prompt to generate refined version
+5. Modification prompt field includes suggestions: appearance changes, lighting adjustments, composition tweaks
+6. Credit cost (5 credits) displayed before modification
+7. Generation progress shown (15-90s depending on asset type)
+8. User can preview result and choose to: save as new asset, replace current asset, or discard
+9. For panels: new version added to panel's version history (see US-016A)
+10. For characters/locations: user chooses "Save as new" or "Replace existing"
+11. Credits only charged when modification completes successfully
+12. Failed modifications show error message with retry option
+
+**Notes:** This enables iterative refinement of generated assets. Unlike regeneration (which starts from original parameters), modification uses the existing image as a base and applies targeted changes. Particularly useful for fine-tuning details like "add a hat", "change background color", or "adjust lighting". For panels, modifications automatically integrate with version history system.
 
 ---
 
@@ -638,9 +663,10 @@ All stories follow **INVEST** principles:
 - US-019: Export PNG (3)
 - US-023: Simple Onboarding (2)
 
-### Phase 2: Enhancement (4 weeks, ~14 points)
-**Target:** Polish and usability improvements
+### Phase 2: Enhancement (4 weeks, ~19 points)
+**Target:** Polish and creative iteration improvements
 
+- US-016B: Modify Asset with Prompt (5)
 - US-024: Add Text to Panels (5)
 - US-025: Duplicate Panel (2)
 - US-026: Account Settings (3)
