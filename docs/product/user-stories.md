@@ -1,10 +1,10 @@
 # ComicCraft AI - User Stories (Simplified MVP)
 
 ## Document Information
-**Version:** 5.0 - Complete MVP with Web UX
+**Version:** 5.1 - Complete MVP with Panel Iterations
 **Last Updated:** October 24, 2025
 **Status:** Ready for Development
-**Story Count:** 23 Phase 1 stories (web app)
+**Story Count:** 24 Phase 1 stories (web app)
 
 ---
 
@@ -296,13 +296,15 @@ All stories follow **INVEST** principles:
 6. User selects panel aspect ratio from options: 3:4 (portrait), 16:9 (landscape), 4:3, 1:1 (square), 9:16 (vertical)
 7. Credit cost (5 credits) displayed before generation
 8. AI generates complete panel based on location, selected characters, prompt, and aspect ratio
-9. Generation shows progress (30-90s estimated)
+9. Generation shows progress (30-90s estimated); system may generate multiple iterations to refine quality
 10. Panel automatically saved to story when generation completes successfully
-11. Credits only charged when generation completes successfully and panel is saved for viewing
-12. Can regenerate with same or modified inputs (costs 5 credits) or accept
-13. If no assets exist, quick links to create them
+11. All generated iterations (versions) saved and accessible; latest iteration selected by default
+12. User can view all iterations with version indicator (e.g., "Version 1 of 3") and select preferred version
+13. Credits only charged when generation completes successfully and panel is saved for viewing
+14. Can regenerate with same or modified inputs (costs 5 credits) or accept current selection
+15. If no assets exist, quick links to create them
 
-**Notes:** Panel composition (character positions, poses, interactions) is fully AI-generated based on the text prompt - no manual positioning controls. Characters are referenced by their names in prompts.
+**Notes:** Panel composition (character positions, poses, interactions) is fully AI-generated based on the text prompt - no manual positioning controls. Characters are referenced by their names in prompts. The system uses an iterative refinement process (max 5 iterations) to improve panel quality - all iterations are saved so users can choose their preferred version. Only one 5-credit charge applies regardless of iteration count.
 
 ---
 
@@ -335,6 +337,26 @@ All stories follow **INVEST** principles:
 2. Confirmation shows thumbnail
 3. Remaining panels automatically renumber
 4. Credits not refunded
+
+---
+
+#### US-016A: Switch Panel Versions
+**As a** user
+**I want to** view and switch between different versions of a generated panel
+**So that** I can choose the best version for my story after reviewing them
+
+**Priority:** Must Have | **Effort:** 2 points | **Dependencies:** US-014
+
+**Acceptance Criteria:**
+1. Each panel in story view has version indicator when multiple versions exist (e.g., "v3 of 5")
+2. Click panel or version indicator to open version viewer
+3. Version viewer shows all saved iterations in a carousel or grid with navigation controls
+4. Each version labeled with generation order (Version 1, Version 2, etc.) and timestamp
+5. User can select any version as the active version for that panel in the story
+6. Selected version updates immediately in story view
+7. All versions remain saved; switching versions doesn't delete alternatives
+
+**Notes:** This feature allows users to review and compare all iterations generated during the refinement process. Particularly useful when the AI generated multiple good options and the user wants to reconsider their initial choice.
 
 ---
 
@@ -583,7 +605,7 @@ All stories follow **INVEST** principles:
 
 ## Development Roadmap
 
-### Phase 1: Ultra-MVP (6 weeks, ~64 points)
+### Phase 1: Ultra-MVP (6 weeks, ~66 points)
 **Target:** Functional comic creation and export with essential UX
 
 **Week 1-2: Foundation & Authentication (21 points)**
@@ -604,7 +626,7 @@ All stories follow **INVEST** principles:
 - US-017: Generation Progress (3)
 - US-018: Handle Failures (3)
 
-**Week 5-6: Story, Panels & Export (17 points)**
+**Week 5-6: Story, Panels & Export (19 points)**
 - US-011: Create Story (2)
 - US-012: Story Gallery (2)
 - US-013: Delete Story (1)
@@ -612,6 +634,7 @@ All stories follow **INVEST** principles:
 - US-014: Compose Panel (10)
 - US-015: Arrange Panels (3)
 - US-016: Delete Panel (1)
+- US-016A: Switch Panel Versions (2)
 - US-019: Export PNG (3)
 - US-023: Simple Onboarding (2)
 
